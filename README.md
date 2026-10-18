@@ -122,5 +122,8 @@ OS_Project_IA2/
 
 ## 👥 Contributors
 
-- **Himanshu Patil** & Team
+- **Aaditya Hande**
+- **Himanshu Patil**
+- **Aditya Suryawanshi**
+- **Chetan Gore**
 - Course: Operating Systems (Course Activity 2 / IA2)
