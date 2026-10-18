@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deadlock Analysis & Resource Allocation Dashboard</title>
+    <meta name="description" content="Interactive dashboard for Banker's Algorithm, deadlock detection, prevention, and resource allocation analysis.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Animated background -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Deadlock Analysis Dashboard</h1>
+                    <p class="subtitle">Banker's Algorithm · Detection · Prevention · Recovery</p>
+                </div>
+            </div>
+            <div class="header-badges">
+                <span class="badge badge-safe" id="systemStatusBadge">System Ready</span>
+                <span class="badge badge-info" id="processCountBadge">0 Processes</span>
+                <span class="badge badge-info" id="resourceCountBadge">0 Resources</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+        <div class="nav-tabs-inner">
+            <button class="tab active" data-tab="setup" id="tabSetup">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/></svg>
+                Setup
+            </button>
+            <button class="tab" data-tab="bankers" id="tabBankers">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+                Banker's Algorithm
+            </button>
+            <button class="tab" data-tab="request" id="tabRequest">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Resource Request
+            </button>
+            <button class="tab" data-tab="detection" id="tabDetection">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Deadlock Detection
+            </button>
+            <button class="tab" data-tab="prevention" id="tabPrevention">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                Prevention
+            </button>
+            <button class="tab" data-tab="results" id="tabResults">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Test Results
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- ========== SETUP TAB ========== -->
+        <section class="tab-content active" id="setupSection">
+            <div class="section-header">
+                <h2>System Configuration</h2>
+                <p>Define the number of processes, resource types, and their allocation matrices.</p>
+            </div>
+
+            <div class="config-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Basic Configuration</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="numProcesses">Number of Processes</label>
+                                <input type="number" id="numProcesses" min="1" max="10" value="5" class="input-field">
+                            </div>
+                            <div class="input-group">
+                                <label for="numResources">Number of Resource Types</label>
+                                <input type="number" id="numResources" min="1" max="10" value="3" class="input-field">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="btnGenerate" onclick="generateMatrixInputs()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/></svg>
+                            Generate Input Fields
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Quick Load Presets</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="preset-grid">
+                            <button class="btn btn-outline" onclick="loadPreset('safe')">
+                                <span class="preset-dot safe"></span> Safe State (Scenario A)
+                            </button>
+                            <button class="btn btn-outline" onclick="loadPreset('exceedsAvail')">
+                                <span class="preset-dot warning"></span> Exceeds Available (B)
+                            </button>
+                            <button class="btn btn-outline" onclick="loadPreset('unsafe')">
+                                <span class="preset-dot danger"></span> Unsafe State (C)
+                            </button>
+                            <button class="btn btn-outline" onclick="loadPreset('deadlock')">
+                                <span class="preset-dot critical"></span> Deadlock (D)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Matrix Inputs -->
+            <div id="matrixInputArea" class="matrix-input-area"></div>
+
+            <div class="action-bar" id="setupActionBar" style="display:none;">
+                <button class="btn btn-success" onclick="applyConfiguration()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+                    Apply Configuration
+                </button>
+                <button class="btn btn-outline" onclick="clearAll()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    Clear All
+                </button>
+            </div>
+        </section>
+
+        <!-- ========== BANKER'S ALGORITHM TAB ========== -->
+        <section class="tab-content" id="bankersSection">
+            <div class="section-header">
+                <h2>Banker's Algorithm – Safety Check</h2>
+                <p>Calculate the Need matrix and determine if the system is in a safe state. Displays the complete safe sequence with step-by-step Work vector updates.</p>
+            </div>
+
+            <div id="bankersContent" class="placeholder-msg">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                <p>Please configure the system in the <strong>Setup</strong> tab first.</p>
+            </div>
+        </section>
+
+        <!-- ========== RESOURCE REQUEST TAB ========== -->
+        <section class="tab-content" id="requestSection">
+            <div class="section-header">
+                <h2>Resource Request Handling</h2>
+                <p>Submit a resource request and see if it can be safely granted, must be delayed, or is invalid.</p>
+            </div>
+
+            <div id="requestContent" class="placeholder-msg">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                <p>Please configure the system in the <strong>Setup</strong> tab first.</p>
+            </div>
+        </section>
+
+        <!-- ========== DEADLOCK DETECTION TAB ========== -->
+        <section class="tab-content" id="detectionSection">
+            <div class="section-header">
+                <h2>Deadlock Detection & Recovery</h2>
+                <p>Construct a resource-allocation scenario to detect circular waits and demonstrate recovery actions.</p>
+            </div>
+
+            <div id="detectionContent" class="placeholder-msg">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                <p>Please configure the system in the <strong>Setup</strong> tab first.</p>
+            </div>
+        </section>
+
+        <!-- ========== PREVENTION TAB ========== -->
+        <section class="tab-content" id="preventionSection">
+            <div class="section-header">
+                <h2>Deadlock Prevention</h2>
+                <p>Apply resource-allocation policies to prevent necessary conditions of deadlock and compare trade-offs.</p>
+            </div>
+
+            <div id="preventionContent" class="placeholder-msg">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                <p>Please configure the system in the <strong>Setup</strong> tab first.</p>
+            </div>
+        </section>
+
+        <!-- ========== TEST RESULTS TAB ========== -->
+        <section class="tab-content" id="resultsSection">
+            <div class="section-header">
+                <h2>Analytical Results & Test Cases</h2>
+                <p>Comprehensive test case table with actual results, expected results, and analysis.</p>
+            </div>
+
+            <div id="resultsContent">
+                <div class="card mb-md">
+                    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                        <div>
+                            <h3 style="margin:0;">Test Case Analysis Table</h3>
+                            <p style="margin:4px 0 0;font-size:0.8rem;color:var(--text-secondary);">Benchmark comparison populated with actual dashboard outputs matching Section 3.</p>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-primary btn-sm" onclick="runAllTestCases()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                ⚡ Run & Verify All Tests (TC1–TC6)
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="window.print()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                                Print / Export PDF
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-wrapper">
+                            <table class="results-table" id="resultsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Test Case</th>
+                                        <th>System Condition</th>
+                                        <th>Actual Result</th>
+                                        <th>Expected Result</th>
+                                        <th>Analysis / Conclusion</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="tc-badge">TC1</span></td>
+                                        <td>Safe state</td>
+                                        <td id="tc1Actual" class="result-cell">—</td>
+                                        <td>Safe sequence found</td>
+                                        <td id="tc1Analysis" class="analysis-cell">—</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="tc-badge">TC2</span></td>
+                                        <td>Request exceeds Available</td>
+                                        <td id="tc2Actual" class="result-cell">—</td>
+                                        <td>Request not granted immediately</td>
+                                        <td id="tc2Analysis" class="analysis-cell">—</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="tc-badge">TC3</span></td>
+                                        <td>Request makes state unsafe</td>
+                                        <td id="tc3Actual" class="result-cell">—</td>
+                                        <td>Request denied; state unchanged</td>
+                                        <td id="tc3Analysis" class="analysis-cell">—</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="tc-badge">TC4</span></td>
+                                        <td>Deadlocked scenario</td>
+                                        <td id="tc4Actual" class="result-cell">—</td>
+                                        <td>Deadlock identified by detection method</td>
+                                        <td id="tc4Analysis" class="analysis-cell">—</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="tc-badge">TC5</span></td>
+                                        <td>Prevention policy applied</td>
+                                        <td id="tc5Actual" class="result-cell">—</td>
+                                        <td>Selected deadlock condition eliminated</td>
+                                        <td id="tc5Analysis" class="analysis-cell">—</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="tc-badge">TC6</span></td>
+                                        <td>Boundary and invalid inputs</td>
+                                        <td id="tc6Actual" class="result-cell">—</td>
+                                        <td>Correct handling or validation message</td>
+                                        <td id="tc6Analysis" class="analysis-cell">—</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boundary / Invalid Input Testing -->
+                <div class="card mt-lg">
+                    <div class="card-header">
+                        <h3>Scenario F: Boundary & Invalid Input Testing</h3>
+                        <p style="margin:4px 0 0;font-size:0.8rem;color:var(--text-secondary);">Distinguishes valid boundary conditions from rejected invalid inputs.</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="boundary-tests">
+                            <button class="btn btn-outline" onclick="runBoundaryTest('zeroAvail')">Zero Available Resources</button>
+                            <button class="btn btn-outline" onclick="runBoundaryTest('zeroNeed')">Process with Zero Need</button>
+                            <button class="btn btn-outline" onclick="runBoundaryTest('invalidPid')">Invalid Process ID</button>
+                            <button class="btn btn-outline" onclick="runBoundaryTest('negativeReq')">Negative Request</button>
+                            <button class="btn btn-outline" onclick="runBoundaryTest('exceedsMax')">Allocation Exceeds Max</button>
+                        </div>
+                        <div id="boundaryResults" class="boundary-results"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+# Local backup directory
+.backup/
+
+# System and editor files
+.DS_Store
+Thumbs.db
+*.tmp
